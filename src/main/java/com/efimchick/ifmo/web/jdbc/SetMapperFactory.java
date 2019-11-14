@@ -2,11 +2,11 @@ package com.efimchick.ifmo.web.jdbc;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
+import java.sql.ResultSet;
 
 import com.efimchick.ifmo.web.jdbc.domain.Employee;
 import com.efimchick.ifmo.web.jdbc.domain.FullName;
@@ -15,47 +15,54 @@ import com.efimchick.ifmo.web.jdbc.domain.Position;
 public class SetMapperFactory {
 
     public SetMapper<Set<Employee>> employeesSetMapper() {
-//        throw new UnsupportedOperationException();
-        SetMapper<Set<Employee>> resultMap = new SetMapper<Set<Employee>>(){
+        //throw new UnsupportedOperationException();
+
+        SetMapper<Set<Employee>> resultMap = new SetMapper<Set<Employee>>() {
+
             @Override
+
             public Set<Employee> mapSet(ResultSet resultSet){
                 try {
-                    Set<Employee> employeesSet = new HashSet<>();
-                    while (resultSet.next()){
-                        employeesSet.add(makeEmployee(resultSet));
+                    Set<Employee> empList = new HashSet<>();
+                    while (resultSet.next()) {
+                        empList.add(makeEmployee(resultSet));
                     }
-                    return employeesSet;
-                } catch (SQLException e){
+                    return empList;
+                } catch (SQLException e) {
+                    e.printStackTrace();
                     return null;
                 }
             }
         };
         return resultMap;
     }
-    private Employee makeEmployee(ResultSet resultSet) throws SQLException {
-        BigInteger id = BigInteger.valueOf(resultSet.getInt("id"));
-        FullName fullname = new FullName(
-                resultSet.getString("firstname"),
-                resultSet.getString("lastname"),
-                resultSet.getString("middlename")
-        );
-        Position position = Position.valueOf(resultSet.getString("position"));
-        LocalDate hired = LocalDate.parse(resultSet.getString("hiredate"));
-        BigDecimal salary = new BigDecimal(resultSet.getString("salary"));
-
-        Employee manager = null;
-
-        if (resultSet.getString("MANAGER") != null) {
-            int managerId = resultSet.getInt("MANAGER");
-            int cuRow = resultSet.getRow();
-            resultSet.absolute(0);
-            while (resultSet.next()) {
-                if (managerId == resultSet.getInt("ID"))
-                    break;
-            }
-            manager = makeEmployee(resultSet);
-            resultSet.absolute(cuRow);
+    private Employee makeEmployee(ResultSet resSet) {
+        try {
+            BigInteger id = new BigInteger(resSet.getString("ID"));
+            FullName fullName = new FullName(resSet.getString("FIRSTNAME"), resSet.getString("LASTNAME"), resSet.getString("MIDDLENAME"));
+            Position position = Position.valueOf(resSet.getString("POSITION"));
+            LocalDate hireDate = LocalDate.parse(resSet.getString("HIREDATE"));
+            BigDecimal salary = resSet.getBigDecimal("SALARY");
+            findManager(resSet);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        return new Employee(id, fullname, position, hired, salary, manager);
+        return new Employee(id, fullName, position, hireDate, salary, manager);
+    }
+    private Employee findManager(ResultSet resSet){
+        try {
+            Employee manager = null;
+            int manID = resSet.getInt("MANAGER");
+            int cur = resSet.getRow();
+            resSet.beforeFirst();
+            while (resSet.next())
+                if (resSet.getInt("ID") == manID)
+                    manager = makeEmployee(resSet);
+            resSet.absolute(cur);
+            return manager;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
