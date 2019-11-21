@@ -17,12 +17,16 @@ import java.util.*;
 public class DaoFactory {
     public EmployeeDao employeeDAO() {
         return new EmployeeDao() {
+
             @Override
+
             public List<Employee> getAll() {
                 try {
-                    ResultSet res = exeReq(
+                    ResultSet res;
+                    res = exeReq(
                             "SELECT * FROM employee");
-                    List<Employee> resList = new ArrayList<>();
+                    List<Employee> resList;
+                    resList= new ArrayList<>();
                     while (res.next()) {
                         resList.add(makeEmployee(res));
                     }
@@ -31,13 +35,13 @@ public class DaoFactory {
                     return null;
                 }
             }
-            
+
             @Override
             public Optional<Employee> getById(BigInteger Id) {
                 try {
-                    ResultSet res = exeReq(
+                    ResultSet res;
+                    res = exeReq(
                             "SELECT * FROM employee WHERE id = " + Id.toString());
-
                     if (res.next())
                         return Optional.of(makeEmployee(res));
                     else
@@ -50,9 +54,11 @@ public class DaoFactory {
             @Override
             public List<Employee> getByDepartment(Department department) {
                 try {
-                    ResultSet res = exeReq(
+                    ResultSet res;
+                    res = exeReq(
                             "SELECT * FROM employee WHERE department = " + department.getId());
-                    List<Employee> resList = new ArrayList<>();
+                    List<Employee> resList;
+                    resList = new ArrayList<>();
                     while (res.next()) {
                         resList.add(makeEmployee(res));
                     }
@@ -65,9 +71,11 @@ public class DaoFactory {
             @Override
             public List<Employee> getByManager(Employee employee) {
                 try {
-                    ResultSet res = exeReq(
+                    ResultSet res;
+                    res= exeReq(
                             "SELECT * FROM employee WHERE manager = " + employee.getId());
-                    List<Employee> resList = new ArrayList<>();
+                    List<Employee> resList;
+                    resList = new ArrayList<>();
                     while (res.next()) {
                         resList.add(makeEmployee(res));
                     }
@@ -81,8 +89,9 @@ public class DaoFactory {
             @Override
             public Employee save(Employee emp) {
                 try {
-                    PreparedStatement pSt = ConnectionSource.instance().createConnection().prepareStatement("INSERT INTO employee VALUES (?,?,?,?,?,?,?,?,?)");
-
+                    PreparedStatement pSt;
+                    pSt = ConnectionSource.instance().createConnection().prepareStatement(
+                            "INSERT INTO employee VALUES (?,?,?,?,?,?,?,?,?)");
                     pSt.setInt(1, emp.getId().intValue());
                     pSt.setString(2, emp.getFullName().getFirstName());
                     pSt.setString(3, emp.getFullName().getLastName());
@@ -90,10 +99,8 @@ public class DaoFactory {
                     pSt.setString(5, emp.getPosition().toString());
                     pSt.setInt(6, emp.getManagerId().intValue());
                     pSt.setDate(7, Date.valueOf(emp.getHired()));
-                    pSt.setDouble(8,
-                            emp.getSalary().doubleValue());
+                    pSt.setDouble(8, emp.getSalary().doubleValue());
                     pSt.setInt(9, emp.getDepartmentId().intValue());
-
                     pSt.executeUpdate();
                     return emp;
                 } catch (SQLException e) {
@@ -119,10 +126,12 @@ public class DaoFactory {
             @Override
             public List<Department> getAll() {
                 try {
-                    ResultSet res = exeReq(
+                    ResultSet res;
+                    res = exeReq(
                             "SELECT * FROM department");
 
-                    List<Department> resList = new ArrayList<>();
+                    List<Department> resList;
+                    resList = new ArrayList<>();
                     while (res.next()) {
                         resList.add(makeDep(res));
                     }
@@ -136,9 +145,9 @@ public class DaoFactory {
             @Override
             public Optional<Department> getById(BigInteger Id) {
                 try {
-                    ResultSet res = exeReq(
-                            "SELECT * FROM department WHERE id = "
-                                    + Id.toString());
+                    ResultSet res;
+                    res = exeReq(
+                            "SELECT * FROM department WHERE id = " + Id.toString());
 
                     if (res.next())
                         return Optional.of(makeDep(res));
@@ -198,8 +207,8 @@ public class DaoFactory {
             BigDecimal salary = res.getBigDecimal("SALARY");
             BigInteger managerId = BigInteger.valueOf(res.getInt("MANAGER"));
             BigInteger departmentId = BigInteger.valueOf(res.getInt("DEPARTMENT"));
-
-            return new Employee(id, fullName, position, hireDate, salary, managerId, departmentId);
+            Employee emp = new Employee(id, fullName, position, hireDate, salary, managerId, departmentId);
+            return emp;
         }
         catch (SQLException e) {
             return null;
@@ -210,8 +219,8 @@ public class DaoFactory {
             BigInteger id = new BigInteger(res.getString("ID"));
             String name = res.getString("NAME");
             String location = res.getString("LOCATION");
-
-            return new Department(id, name, location);
+            Department dep = new Department(id, name, location);
+            return dep;
         }
         catch (SQLException e) {
             return null;
