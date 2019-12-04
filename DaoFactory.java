@@ -75,8 +75,7 @@ public class DaoFactory {
             @Override
             public List<Employee> getByDepartment(Department department) {
                 try {
-                    ResultSet resultSet = exeReq(
-                            "SELECT * FROM employee WHERE department = " + department.getId());
+                    ResultSet resultSet = exeReq("SELECT * FROM employee WHERE department = " + department.getId());
                     List<Employee> res = new ArrayList<>();
                     while (resultSet.next()) {
                         res.add(makeEmp(resultSet));
@@ -107,8 +106,7 @@ public class DaoFactory {
             @Override
             public Optional<Employee> getById(BigInteger Id) {
                 try {
-                    ResultSet resultSet = exeReq(
-                            "SELECT * FROM employee WHERE id = " + Id.toString());
+                    ResultSet resultSet = exeReq("SELECT * FROM employee WHERE id = " + Id.toString());
                     if (resultSet.next())
                         return Optional.of(makeEmp(resultSet));
                     else
@@ -121,8 +119,7 @@ public class DaoFactory {
             @Override
             public Employee save(Employee employee) {
                 try {
-                    PreparedStatement prepStat = ConnectionSource.instance().createConnection().prepareStatement(
-                            "INSERT INTO employee VALUES (?,?,?,?,?,?,?,?,?)");
+                    PreparedStatement prepStat = ConnectionSource.instance().createConnection().prepareStatement("INSERT INTO employee VALUES (?,?,?,?,?,?,?,?,?)");
                     prepStat.setInt(1, employee.getId().intValue());
                     prepStat.setString(2, employee.getFullName().getFirstName());
                     prepStat.setString(3, employee.getFullName().getLastName());
@@ -143,8 +140,7 @@ public class DaoFactory {
             @Override
             public void delete(Employee employee) {
                 try {
-                    ConnectionSource.instance().createConnection().createStatement().execute(
-                            "DELETE FROM employee WHERE ID = " + employee.getId().toString());
+                    ConnectionSource.instance().createConnection().createStatement().execute("DELETE FROM employee WHERE ID = " + employee.getId().toString());
                 }
                 catch (SQLException e) {
                     System.out.println("delete error");
@@ -158,8 +154,7 @@ public class DaoFactory {
             @Override
             public List<Department> getAll() {
                 try {
-                    ResultSet resultSet = exeReq(
-                            "SELECT * FROM department");
+                    ResultSet resultSet = exeReq("SELECT * FROM department");
 
                     List<Department> res = new ArrayList<>();
                     while (resultSet.next()) {
@@ -174,8 +169,7 @@ public class DaoFactory {
             @Override
             public Optional<Department> getById(BigInteger Id) {
                 try {
-                    ResultSet resultSet = exeReq(
-                            "SELECT * FROM department WHERE id = " + Id.toString());
+                    ResultSet resultSet = exeReq("SELECT * FROM department WHERE id = " + Id.toString());
                     if (resultSet.next())
                         return Optional.of(makeDep(resultSet));
                     else
@@ -191,15 +185,13 @@ public class DaoFactory {
                     PreparedStatement prepStat;
 
                     if (getById(department.getId()).equals(Optional.empty())) {
-                        prepStat = ConnectionSource.instance().createConnection().prepareStatement(
-                                "INSERT INTO department VALUES (?,?,?)");
+                        prepStat = ConnectionSource.instance().createConnection().prepareStatement("INSERT INTO department VALUES (?,?,?)");
                         prepStat.setInt(1, department.getId().intValue());
                         prepStat.setString(2, department.getName());
                         prepStat.setString(3, department.getLocation());
                     }
                     else {
-                        prepStat = ConnectionSource.instance().createConnection().prepareStatement(
-                                "UPDATE department SET NAME = ?, LOCATION = ? WHERE ID = ?");
+                        prepStat = ConnectionSource.instance().createConnection().prepareStatement("UPDATE department SET NAME = ?, LOCATION = ? WHERE ID = ?");
                         prepStat.setString(1, department.getName());
                         prepStat.setString(2, department.getLocation());
                         prepStat.setInt(3, department.getId().intValue());
@@ -216,8 +208,7 @@ public class DaoFactory {
             @Override
             public void delete(Department department) {
                 try {
-                    ConnectionSource.instance().createConnection().createStatement().execute(
-                            "DELETE FROM department WHERE ID = " + department.getId().toString());
+                    ConnectionSource.instance().createConnection().createStatement().execute("DELETE FROM department WHERE ID = " + department.getId().toString());
                 }
                 catch (SQLException e) {}
             }
