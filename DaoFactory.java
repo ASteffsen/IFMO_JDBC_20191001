@@ -15,6 +15,43 @@ import java.time.LocalDate;
 import java.util.*;
 
 public class DaoFactory {
+    private Employee makeEmployee(ResultSet res){
+        try {
+            BigInteger id = new BigInteger(res.getString("ID"));
+            FullName fullName = new FullName(res.getString("FIRSTNAME"), res.getString("LASTNAME"), res.getString("MIDDLENAME"));
+            Position position = Position.valueOf(res.getString("POSITION"));
+            LocalDate hireDate = LocalDate.parse(res.getString("HIREDATE"));
+            BigDecimal salary = res.getBigDecimal("SALARY");
+            BigInteger managerId = BigInteger.valueOf(res.getInt("MANAGER"));
+            BigInteger departmentId = BigInteger.valueOf(res.getInt("DEPARTMENT"));
+            Employee emp = new Employee(id, fullName, position, hireDate, salary, managerId, departmentId);
+            return emp;
+        }
+        catch (SQLException e) {
+            return null;
+        }
+    }
+    private Department makeDep(ResultSet res) {
+        try {
+            BigInteger id = new BigInteger(res.getString("ID"));
+            String name = res.getString("NAME");
+            String location = res.getString("LOCATION");
+            Department dep = new Department(id, name, location);
+            return dep;
+        }
+        catch (SQLException e) {
+            return null;
+        }
+    }
+
+    private ResultSet exeReq(String request){
+        try {
+            return ConnectionSource.instance().createConnection().createStatement().executeQuery(request);
+        }
+        catch (SQLException e){
+            return null;
+        }
+    }
     public EmployeeDao employeeDAO() {
         return new EmployeeDao() {
 
@@ -198,41 +235,5 @@ public class DaoFactory {
 
         };
     }
-    private Employee makeEmployee(ResultSet res){
-        try {
-            BigInteger id = new BigInteger(res.getString("ID"));
-            FullName fullName = new FullName(res.getString("FIRSTNAME"), res.getString("LASTNAME"), res.getString("MIDDLENAME"));
-            Position position = Position.valueOf(res.getString("POSITION"));
-            LocalDate hireDate = LocalDate.parse(res.getString("HIREDATE"));
-            BigDecimal salary = res.getBigDecimal("SALARY");
-            BigInteger managerId = BigInteger.valueOf(res.getInt("MANAGER"));
-            BigInteger departmentId = BigInteger.valueOf(res.getInt("DEPARTMENT"));
-            Employee emp = new Employee(id, fullName, position, hireDate, salary, managerId, departmentId);
-            return emp;
-        }
-        catch (SQLException e) {
-            return null;
-        }
-    }
-    private Department makeDep(ResultSet res) {
-        try {
-            BigInteger id = new BigInteger(res.getString("ID"));
-            String name = res.getString("NAME");
-            String location = res.getString("LOCATION");
-            Department dep = new Department(id, name, location);
-            return dep;
-        }
-        catch (SQLException e) {
-            return null;
-        }
-    }
 
-    private ResultSet exeReq(String request){
-        try {
-            return ConnectionSource.instance().createConnection().createStatement().executeQuery(request);
-        }
-        catch (SQLException e){
-            return null;
-        }
-    }
 }
