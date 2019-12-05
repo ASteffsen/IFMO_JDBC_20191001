@@ -50,7 +50,7 @@ public class DaoFactory {
         try {
             return ConnectionSource.instance().createConnection().createStatement().executeQuery(request);
         }
-        catch (SQLException e) {
+        catch (SQLException e){
             return null;
         }
     }
@@ -125,19 +125,24 @@ public class DaoFactory {
 
             @Override
             public Employee save(Employee employee) {
-                exeSQL(
-                        "INSERT INTO employee VALUES ('"
-                                + employee.getId() + "', '"
-                                + employee.getFullName().getFirstName() + "', '"
-                                + employee.getFullName().getLastName() + "', '"
-                                + employee.getFullName().getMiddleName() + "', '"
-                                + employee.getPosition() + "', '"
-                                + employee.getManagerId() + "', '"
-                                + Date.valueOf(employee.getHired()) + "', '"
-                                + employee.getSalary() + "', '"
-                                + employee.getDepartmentId() + "')"
-                );
-                return employee;
+                try {
+                    exeSQL(
+                            "INSERT INTO employee VALUES ('"
+                                    + employee.getId() + "', '"
+                                    + employee.getFullName().getFirstName() + "', '"
+                                    + employee.getFullName().getLastName() + "', '"
+                                    + employee.getFullName().getMiddleName() + "', '"
+                                    + employee.getPosition() + "', '"
+                                    + employee.getManagerId() + "', '"
+                                    + Date.valueOf(employee.getHired()) + "', '"
+                                    + employee.getSalary() + "', '"
+                                    + employee.getDepartmentId() + "')"
+                    );
+                    return employee;
+                }
+                catch (SQLException e) {
+                    return null;
+                }
             }
 
             @Override
@@ -189,22 +194,27 @@ public class DaoFactory {
 
             @Override
             public Department save(Department department) {
-                if (getById(department.getId()).equals(Optional.empty())) {
-                    exeSQL(
-                            "INSERT INTO department VALUES ('" +
-                                    department.getId() + "', '" +
-                                    department.getName() + "', '" +
-                                    department.getLocation() + "')"
-                    );
-                } else {
-                    exeSQL(
-                            "UPDATE department SET " +
-                                    "NAME = '" + department.getName() + "', " +
-                                    "LOCATION = '" + department.getLocation() + "' " +
-                                    "WHERE ID = '" + department.getId() + "'"
-                    );
+                try {
+                    if (getById(department.getId()).equals(Optional.empty())) {
+                        exeSQL(
+                                "INSERT INTO department VALUES ('" +
+                                        department.getId()       + "', '" +
+                                        department.getName()     + "', '" +
+                                        department.getLocation() + "')"
+                        );
+                    } else {
+                        exeSQL(
+                                "UPDATE department SET " +
+                                        "NAME = '"     + department.getName()     + "', " +
+                                        "LOCATION = '" + department.getLocation() + "' " +
+                                        "WHERE ID = '" + department.getId()       + "'"
+                        );
+                    }
+                    return department;
                 }
-                return department;
+                catch (SQLException e) {
+                    return null;
+                }
             }
 
             @Override
