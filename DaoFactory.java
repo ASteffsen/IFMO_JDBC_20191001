@@ -25,7 +25,8 @@ public class DaoFactory {
             BigInteger managerId = BigInteger.valueOf(resultSet.getInt("MANAGER"));
             BigInteger departmentId = BigInteger.valueOf(resultSet.getInt("DEPARTMENT"));
 
-            return new Employee(id, fullName, position, hireDate, salary, managerId, departmentId);
+            Employee emp = new Employee(id, fullName, position, hireDate, salary, managerId, departmentId);
+            return emp;
         }
         catch (SQLException e) {
             return null;
@@ -34,18 +35,18 @@ public class DaoFactory {
 
     private Department makeDep(ResultSet resultSet) {
         try {
-
             BigInteger id = new BigInteger(resultSet.getString("ID"));
             String name = resultSet.getString("NAME");
             String location = resultSet.getString("LOCATION");
-            return new Department(id, name, location);
+            Department dep = new Department(id, name, location);
+            return dep;
         }
         catch (SQLException e) {
             return null;
         }
     }
 
-    private ResultSet exeReq(String request) {
+    private ResultSet exeSQL(String request) {
         try {
             return ConnectionSource.instance().createConnection().createStatement().executeQuery(request);
         }
@@ -57,30 +58,16 @@ public class DaoFactory {
     public EmployeeDao employeeDAO() {
         return new EmployeeDao() {
             @Override
-            public List<Employee> getAll() {
-                try {
-                    ResultSet resultSet = exeReq(
-                            "SELECT * FROM employee");
-                    List<Employee> res = new ArrayList<>();
-                    while (resultSet.next()) {
-                        res.add(makeEmp(resultSet));
-                    }
-                    return res;
-                }
-                catch (SQLException e) {
-                    return null;
-                }
-            }
-
-            @Override
             public List<Employee> getByDepartment(Department department) {
                 try {
-                    ResultSet resultSet = exeReq("SELECT * FROM employee WHERE department = " + department.getId());
-                    List<Employee> res = new ArrayList<>();
+                    ResultSet resultSet = exeSQL("SELECT * FROM employee WHERE department = " + department.getId());
+
+                    List<Employee> result = new ArrayList<>();
                     while (resultSet.next()) {
-                        res.add(makeEmp(resultSet));
+                        result.add(makeEmp(resultSet));
                     }
-                    return res;
+
+                    return result;
                 }
                 catch (SQLException e) {
                     return null;
@@ -90,13 +77,14 @@ public class DaoFactory {
             @Override
             public List<Employee> getByManager(Employee employee) {
                 try {
-                    ResultSet resultSet = exeReq(
-                            "SELECT * FROM employee WHERE manager = " + employee.getId());
-                    List<Employee> res = new ArrayList<>();
+                    ResultSet resultSet = exeSQL("SELECT * FROM employee WHERE manager = " + employee.getId());
+
+                    List<Employee> result = new ArrayList<>();
                     while (resultSet.next()) {
-                        res.add(makeEmp(resultSet));
+                        result.add(makeEmp(resultSet));
                     }
-                    return res;
+
+                    return result;
                 }
                 catch (SQLException e) {
                     return null;
@@ -106,7 +94,8 @@ public class DaoFactory {
             @Override
             public Optional<Employee> getById(BigInteger Id) {
                 try {
-                    ResultSet resultSet = exeReq("SELECT * FROM employee WHERE id = " + Id.toString());
+                    ResultSet resultSet = exeSQL("SELECT * FROM employee WHERE id = " + Id.toString());
+
                     if (resultSet.next())
                         return Optional.of(makeEmp(resultSet));
                     else
@@ -116,25 +105,39 @@ public class DaoFactory {
                     return Optional.empty();
                 }
             }
+
             @Override
-            public Employee save(Employee employee) {
+            public List<Employee> getAll() {
                 try {
-                    PreparedStatement prepStat = ConnectionSource.instance().createConnection().prepareStatement("INSERT INTO employee VALUES (?,?,?,?,?,?,?,?,?)");
-                    prepStat.setInt(1, employee.getId().intValue());
-                    prepStat.setString(2, employee.getFullName().getFirstName());
-                    prepStat.setString(3, employee.getFullName().getLastName());
-                    prepStat.setString(4, employee.getFullName().getMiddleName());
-                    prepStat.setString(5, employee.getPosition().toString());
-                    prepStat.setInt(6, employee.getManagerId().intValue());
-                    prepStat.setDate(7, Date.valueOf(employee.getHired()));
-                    prepStat.setDouble(8, employee.getSalary().doubleValue());
-                    prepStat.setInt(9, employee.getDepartmentId().intValue());
-                    prepStat.executeUpdate();
-                    return employee;
+                    ResultSet resultSet = exeSQL("SELECT * FROM employee");
+
+                    List<Employee> result = new ArrayList<>();
+                    while (resultSet.next()) {
+                        result.add(makeEmp(resultSet));
+                    }
+
+                    return result;
                 }
                 catch (SQLException e) {
                     return null;
                 }
+            }
+
+            @Override
+            public Employee save(Employee employee) {
+                exeSQL(
+                        "INSERT INTO employee VALUES ('"
+                                + employee.getId() + "', '"
+                                + employee.getFullName().getFirstName() + "', '"
+                                + employee.getFullName().getLastName() + "', '"
+                                + employee.getFullName().getMiddleName() + "', '"
+                                + employee.getPosition() + "', '"
+                                + employee.getManagerId() + "', '"
+                                + Date.valueOf(employee.getHired()) + "', '"
+                                + employee.getSalary() + "', '"
+                                + employee.getDepartmentId() + "')"
+                );
+                return employee;
             }
 
             @Override
@@ -152,24 +155,10 @@ public class DaoFactory {
     public DepartmentDao departmentDAO() {
         return new DepartmentDao() {
             @Override
-            public List<Department> getAll() {
-                try {
-                    ResultSet resultSet = exeReq("SELECT * FROM department");
-
-                    List<Department> res = new ArrayList<>();
-                    while (resultSet.next()) {
-                        res.add(makeDep(resultSet));
-                    }
-                    return res;
-                }
-                catch (SQLException e) {
-                    return null;
-                }
-            }
-            @Override
             public Optional<Department> getById(BigInteger Id) {
                 try {
-                    ResultSet resultSet = exeReq("SELECT * FROM department WHERE id = " + Id.toString());
+                    ResultSet resultSet = exeSQL("SELECT * FROM department WHERE id = " + Id.toString());
+
                     if (resultSet.next())
                         return Optional.of(makeDep(resultSet));
                     else
@@ -178,31 +167,44 @@ public class DaoFactory {
                 catch (SQLException e) {
                     return Optional.empty();
                 }
+
             }
+
             @Override
-            public Department save(Department department) {
+            public List<Department> getAll() {
                 try {
-                    PreparedStatement prepStat;
+                    ResultSet resultSet = exeSQL("SELECT * FROM department");
 
-                    if (getById(department.getId()).equals(Optional.empty())) {
-                        prepStat = ConnectionSource.instance().createConnection().prepareStatement("INSERT INTO department VALUES (?,?,?)");
-                        prepStat.setInt(1, department.getId().intValue());
-                        prepStat.setString(2, department.getName());
-                        prepStat.setString(3, department.getLocation());
-                    }
-                    else {
-                        prepStat = ConnectionSource.instance().createConnection().prepareStatement("UPDATE department SET NAME = ?, LOCATION = ? WHERE ID = ?");
-                        prepStat.setString(1, department.getName());
-                        prepStat.setString(2, department.getLocation());
-                        prepStat.setInt(3, department.getId().intValue());
+                    List<Department> result = new ArrayList<>();
+                    while (resultSet.next()) {
+                        result.add(makeDep(resultSet));
                     }
 
-                    prepStat.executeUpdate();
-                    return department;
+                    return result;
                 }
                 catch (SQLException e) {
                     return null;
                 }
+            }
+
+            @Override
+            public Department save(Department department) {
+                if (getById(department.getId()).equals(Optional.empty())) {
+                    exeSQL(
+                            "INSERT INTO department VALUES ('" +
+                                    department.getId() + "', '" +
+                                    department.getName() + "', '" +
+                                    department.getLocation() + "')"
+                    );
+                } else {
+                    exeSQL(
+                            "UPDATE department SET " +
+                                    "NAME = '" + department.getName() + "', " +
+                                    "LOCATION = '" + department.getLocation() + "' " +
+                                    "WHERE ID = '" + department.getId() + "'"
+                    );
+                }
+                return department;
             }
 
             @Override
@@ -215,4 +217,3 @@ public class DaoFactory {
         };
     }
 }
-
